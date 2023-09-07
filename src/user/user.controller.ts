@@ -2,30 +2,22 @@ import {
   Body,
   Controller,
   Delete,
-  Param,
   Patch,
-  Post,
-  // UseGuards,
+  UseGuards,
   NotFoundException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
+import { AuthGuard } from '@nestjs/passport';
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('user')
 export class UserController {
   constructor(private readonly service: UserService) {}
 
-  @Post()
-  async createUser(@Body() body: any) {
-    await this.service.create(body);
-
-    return {
-      message: 'Cadastro realizado com sucesso',
-    };
-  }
-
   @Patch()
-  async updateUser(@Body() body: any) {
-    const user = await this.service.update('', body);
+  async updateUser(@CurrentUser('id') id: string, @Body() body: any) {
+    const user = await this.service.update(id, body);
 
     if (!user) throw new NotFoundException('Usuário não encontrado');
 
@@ -35,8 +27,8 @@ export class UserController {
     };
   }
 
-  @Delete('/:id')
-  async deleteUser(@Param('id') id: string) {
+  @Delete()
+  async deleteUser(@CurrentUser('id') id: string) {
     const user = await this.service.remove(id);
 
     if (!user) throw new NotFoundException('Usuário não encontrado');

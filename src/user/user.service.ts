@@ -7,10 +7,22 @@ import * as bcrypt from 'bcrypt';
 export class UserService {
   constructor(private db: DatabaseService) {}
 
-  async create(data: Prisma.UserCreateInput): Promise<User> {
-    const hash: string = bcrypt.hashSync(data.password, 10);
+  async create(data: Prisma.UserCreateInput): Promise<User | null> {
+    try {
+      const userExists = await this.find({
+        email: data.email,
+        document: data.document,
+      });
 
-    return this.db.user.create({ data: { ...data, password: hash } });
+      if (userExists) return null;
+
+      const hash: string = bcrypt.hashSync(data.password, 10);
+
+      return this.db.user.create({ data: { ...data, password: hash } });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
   }
 
   async find(query: Prisma.UserWhereUniqueInput): Promise<User | null> {
