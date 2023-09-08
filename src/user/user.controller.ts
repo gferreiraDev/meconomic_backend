@@ -11,7 +11,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 
 @UseGuards(AuthGuard('jwt'))
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly service: UserService) {}
 

@@ -3,6 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { SendgridModule } from './services/sendgrid/sendgrid.module';
+import { TwilioModule } from './services/twilio/twilio.module';
+import { StatementsModule } from './statements/statements.module';
 
 @Module({
   imports: [
@@ -10,6 +13,9 @@ import { AuthModule } from './auth/auth.module';
     DatabaseModule,
     UserModule,
     AuthModule,
+    SendgridModule,
+    TwilioModule,
+    StatementsModule,
   ],
   controllers: [],
   providers: [],

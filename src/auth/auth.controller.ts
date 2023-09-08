@@ -41,6 +41,15 @@ export class AuthController {
     };
   }
 
+  @Post('/forgot-password')
+  async forgotPassword(@Body() body: any) {
+    await this.service.forgotPassword(body);
+
+    return {
+      message: 'Link de recuperação enviado com sucesso',
+    };
+  }
+
   @Patch('/update-password')
   async updatePassword(@CurrentUser() user: User, @Body() body: any) {
     const data = await this.service.updatePassword(user, body);
@@ -50,6 +59,17 @@ export class AuthController {
     return {
       message: 'Senha atualizada com sucesso',
       data,
+    };
+  }
+
+  @Patch('/reset-password')
+  async resetPassword(@Body() body: any) {
+    const user = await this.service.resetPassword(body);
+
+    if (!user) throw new BadRequestException('Código inválido ou expirado');
+
+    return {
+      message: 'Senha atualizada com sucesso',
     };
   }
 }
