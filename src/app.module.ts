@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { SendgridModule } from './services/sendgrid/sendgrid.module';
 import { TwilioModule } from './services/twilio/twilio.module';
 import { StatementsModule } from './statements/statements.module';
+import { CardsModule } from './cards/cards.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { StatementsModule } from './statements/statements.module';
     SendgridModule,
     TwilioModule,
     StatementsModule,
+    CardsModule,
   ],
   controllers: [],
   providers: [],

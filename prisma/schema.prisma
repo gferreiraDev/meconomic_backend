@@ -19,4 +19,51 @@ model User {
   isValidated Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  statements Statement[]
+  cards Card[]
+}
+
+model Statement {
+  id String @id @default(uuid())
+  type String
+  category String
+  subcategory String?
+  description String
+  expectedValue Float
+  dueDay Int
+  installments Int
+  months Month[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId String
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Month {
+  id Int @id @default(autoincrement())
+  month String
+  label String
+  checked Boolean
+  statement Statement @relation(fields: [statementId], references: [id])
+  statementId String
+}
+
+model Card {
+  id String @id @default(uuid())
+  brand String
+  name String
+  lastNumbers String @unique
+  limit Float
+  currentLimit Float
+  closingDay Int
+  dueDay Int
+  annuity Float
+  fees Float
+  chargeRule String
+  expiryDate String
+  status String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId String
+  user User @relation(fields: [userId], references: [id])
 }
