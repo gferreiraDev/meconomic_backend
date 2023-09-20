@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Statement } from '@prisma/client';
 import { DatabaseService } from '../database/database.service';
 import { StatementDto } from './dtos/statement.dto';
+import { TransactionsService } from '../transactions/transactions.service';
 
 @Injectable()
 export class StatementsService {
-  constructor(private db: DatabaseService) {}
+  constructor(
+    private db: DatabaseService,
+    private transactionService: TransactionsService,
+  ) {}
 
   async create(userId: string, data: StatementDto): Promise<Statement | null> {
     try {
@@ -17,7 +21,10 @@ export class StatementsService {
           },
           userId,
         },
+        include: { months: true },
       });
+
+      await this.transactionService.createMany(statement);
 
       return statement;
     } catch (error) {
@@ -73,9 +80,12 @@ export class StatementsService {
     try {
       await this.db.month.deleteMany({ where: { statementId: id } });
 
+      await this.transactionService.removeMany(userId, { id });
+
       const statement = await this.db.statement.delete({
         where: { id, userId },
       });
+
       return statement;
     } catch (error) {
       console.log(error);

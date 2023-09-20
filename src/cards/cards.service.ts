@@ -3,10 +3,14 @@ import { Card } from '@prisma/client';
 import { DatabaseService } from '../database/database.service';
 import { CardDto } from './dtos/Card.dto';
 import { generateMonths } from '../utils/generateMonthArray';
+import { StatementsService } from '../statements/statements.service';
 
 @Injectable()
 export class CardsService {
-  constructor(private db: DatabaseService) {}
+  constructor(
+    private db: DatabaseService,
+    private statementService: StatementsService,
+  ) {}
 
   async create(userId: string, data: CardDto): Promise<Card | null> {
     try {
@@ -29,24 +33,35 @@ export class CardsService {
       });
 
       // Create a Card Statement
-      const cardStatement = {
+      // const cardStatement = {
+      //   type: 'DA',
+      //   category: 'Fatura Cartão',
+      //   description: `Fatura ${card.name}`,
+      //   expectedValue: card.annuity / 12 + card.fees / 12,
+      //   dueDay: card.dueDay,
+      //   installments: 12,
+      //   userId,
+      // };
+
+      await this.statementService.create(userId, {
         type: 'DA',
+        subcategory: null,
         category: 'Fatura Cartão',
         description: `Fatura ${card.name}`,
         expectedValue: card.annuity / 12 + card.fees / 12,
         dueDay: card.dueDay,
         installments: 12,
-        userId,
-      };
-
-      await this.db.statement.create({
-        data: {
-          ...cardStatement,
-          months: {
-            createMany: { data: generateMonths() },
-          },
-        },
+        months: generateMonths(),
       });
+
+      // await this.db.statement.create({
+      //   data: {
+      //     ...cardStatement,
+      //     months: {
+      //       createMany: { data: generateMonths() },
+      //     },
+      //   },
+      // });
 
       return card;
     } catch (error) {

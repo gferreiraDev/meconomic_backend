@@ -21,6 +21,7 @@ model User {
   updatedAt DateTime @updatedAt
   statements Statement[]
   cards Card[]
+  transactions Transaction[]
 }
 
 model Statement {
@@ -37,6 +38,7 @@ model Statement {
   updatedAt DateTime @updatedAt
   userId String
   user User @relation(fields: [userId], references: [id])
+  transactions Transaction[]
 }
 
 model Month {
@@ -66,4 +68,24 @@ model Card {
   updatedAt DateTime @updatedAt
   userId String
   user User @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id String @id @default(uuid())
+  type String
+  category String
+  subcategory String?
+  description String
+  value Float
+  dueDate DateTime
+  payDate DateTime
+  installments Int
+  installment Int
+  status String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  statementId String?
+  statement Statement? @relation(fields: [statementId], references: [id])
 }

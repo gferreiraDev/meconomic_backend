@@ -7,6 +7,7 @@ import { SendgridModule } from './services/sendgrid/sendgrid.module';
 import { TwilioModule } from './services/twilio/twilio.module';
 import { StatementsModule } from './statements/statements.module';
 import { CardsModule } from './cards/cards.module';
+import { TransactionsModule } from './transactions/transactions.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CardsModule } from './cards/cards.module';
     TwilioModule,
     StatementsModule,
     CardsModule,
+    TransactionsModule,
   ],
   controllers: [],
   providers: [],
