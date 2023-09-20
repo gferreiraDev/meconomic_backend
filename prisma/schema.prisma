@@ -34,11 +34,12 @@ model Statement {
   dueDay Int
   installments Int
   months Month[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
   userId String
   user User @relation(fields: [userId], references: [id])
   transactions Transaction[]
+  card Card?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Month {
@@ -68,6 +69,8 @@ model Card {
   updatedAt DateTime @updatedAt
   userId String
   user User @relation(fields: [userId], references: [id])
+  statement Statement @relation(fields: [statementId], references: [id])
+  statementId String @unique
 }
 
 model Transaction {
@@ -87,5 +90,5 @@ model Transaction {
   userId String
   user User @relation(fields: [userId], references: [id])
   statementId String?
-  statement Statement? @relation(fields: [statementId], references: [id])
+  statement Statement? @relation(fields: [statementId], references: [id], onDelete: Cascade)
 }

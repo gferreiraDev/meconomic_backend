@@ -8,6 +8,7 @@ import { TwilioModule } from './services/twilio/twilio.module';
 import { StatementsModule } from './statements/statements.module';
 import { CardsModule } from './cards/cards.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     StatementsModule,
     CardsModule,
     TransactionsModule,
+    DashboardModule,
   ],
   controllers: [],
   providers: [],

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Transaction } from '@prisma/client';
+import { Month, Transaction } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { generateDate } from 'src/utils/generateDate';
 import { TransactionDto } from './dtos/transaction.dto';
@@ -25,12 +25,14 @@ export class TransactionsService {
     }
   }
 
-  async createMany(data: any): Promise<Transaction[]> {
+  async createMany(data: any): Promise<void> {
     try {
-      const validMonths = data?.months.filter((month) => month.checked);
+      const validMonths: Month[] = data?.months.filter(
+        (month) => month.checked,
+      );
 
-      const transactions = validMonths.map(async (month) => {
-        await this.db.transaction.createMany({
+      return validMonths.forEach(async (month, idx) => {
+        await this.db.transaction.create({
           data: {
             type: data.type,
             category: data.category,
@@ -39,15 +41,14 @@ export class TransactionsService {
             dueDate: generateDate(month.month, data.dueDay),
             payDate: generateDate(month.month, data.dueDay),
             installments: data.installments,
-            installment: parseInt(month.month),
+            installment: idx + 1,
+            // installment: parseInt(month.month),
             userId: data.userId,
-            statementId: data.id || null,
+            statementId: data.id,
             status: 'Pendente',
           },
         });
       });
-
-      return transactions;
     } catch (error) {
       console.log(error);
       return null;
@@ -125,11 +126,15 @@ export class TransactionsService {
     }
   }
 
-  async removeMany(userId: string, args: any): Promise<any> {
+  async removeMany(userId: string, statementId: string): Promise<any> {
+    console.log({ userId }, { statementId });
+
     try {
       const transactions = await this.db.transaction.deleteMany({
-        where: { userId, ...args },
+        where: { userId, statementId },
       });
+
+      console.log(transactions);
 
       return transactions;
     } catch (error) {
