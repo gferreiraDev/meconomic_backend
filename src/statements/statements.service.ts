@@ -80,10 +80,12 @@ export class StatementsService {
     try {
       await this.db.month.deleteMany({ where: { statementId: id } });
 
-      await this.transactionService.removeMany(userId, { id });
-
       const statement = await this.db.statement.delete({
         where: { id, userId },
+      });
+
+      await this.transactionService.removeMany(userId, {
+        statementId: statement.id,
       });
 
       return statement;
