@@ -22,6 +22,7 @@ model User {
   statements Statement[]
   cards Card[]
   transactions Transaction[]
+  reserves Reserve[]
 }
 
 model Statement {
@@ -71,6 +72,7 @@ model Card {
   user User @relation(fields: [userId], references: [id])
   statement Statement @relation(fields: [statementId], references: [id])
   statementId String @unique
+  purchases Purchase[]
 }
 
 model Transaction {
@@ -91,4 +93,57 @@ model Transaction {
   user User @relation(fields: [userId], references: [id])
   statementId String?
   statement Statement? @relation(fields: [statementId], references: [id], onDelete: Cascade)
+  payment Payment?
+}
+
+model Purchase {
+  id String @id @default(uuid())
+  purchaseDate DateTime
+  value Float
+  description String
+  installments Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId String
+  purchaseInstallments PurchaseInstallment[]
+}
+
+model PurchaseInstallment {
+  id String @id @default(uuid())
+  currentInstallment Int
+  currentValue Float
+  dueDate DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  purchaseId String
+}
+
+model Reserve {
+  id String @id @default(uuid())
+  amount Float
+  type String
+  description String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  userId String
+  payments Payment[]
+}
+
+model Payment {
+  value Float
+  paymentType String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactionId String @unique
+  reserveId String
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+  reserve Reserve @relation(fields: [reserveId], references: [id])
+  @@id([transactionId, reserveId])
 }

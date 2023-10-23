@@ -9,6 +9,10 @@ import { StatementsModule } from './statements/statements.module';
 import { CardsModule } from './cards/cards.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { PurchaseModule } from './purchase/purchase.module';
+import { InvoiceModule } from './invoice/invoice.module';
+import { ReserveModule } from './reserve/reserve.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -22,6 +26,10 @@ import { DashboardModule } from './dashboard/dashboard.module';
     CardsModule,
     TransactionsModule,
     DashboardModule,
+    PurchaseModule,
+    InvoiceModule,
+    ReserveModule,
+    PaymentModule,
   ],
   controllers: [],
   providers: [],

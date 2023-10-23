@@ -5,8 +5,25 @@ import { Injectable } from '@nestjs/common';
 export class DashboardService {
   constructor(private db: DatabaseService) {}
 
-  async getData(userId: string): Promise<any> {
+  private generateMonthList = () => {
+    const currentDate = new Date();
     const months = [];
+
+    for (let i = 0; i < 12; i++) {
+      const currentMonthDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() + i,
+        1,
+      ).toLocaleDateString('en-us');
+
+      months.push(currentMonthDate);
+    }
+
+    return months;
+  };
+
+  async getData(userId: string): Promise<any> {
+    const months = this.generateMonthList();
     const incomes = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const expenses = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const totalDF = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -28,13 +45,13 @@ export class DashboardService {
       });
 
       transactions.forEach(({ type, value, dueDate }) => {
-        const currentDate = dueDate
-          .toLocaleDateString('en-us')
-          .replace(/\/\d+\//, '/01/');
+        // const currentDate = dueDate
+        //   .toLocaleDateString('en-us')
+        //   .replace(/\/\d+\//, '/01/');
 
-        if (!months.includes(currentDate)) {
-          months.push(currentDate);
-        }
+        // if (!months.includes(currentDate)) {
+        //   months.push(currentDate);
+        // }
 
         const month = dueDate.getMonth();
 
@@ -64,7 +81,7 @@ export class DashboardService {
       const result = incomes.map((item, idx) => item - expenses[idx]);
 
       const resultSet = {
-        // labels: months,
+        labels: months,
         incomes: incomes.map((value) => value.toFixed(2)),
         expenses: expenses.map((value) => value.toFixed(2)),
         result: result.map((value) => value.toFixed(2)),
@@ -84,4 +101,10 @@ export class DashboardService {
       return null;
     }
   }
+
+  // listar os lançamentos de um determinado mês
+  // separar os lançamentos entre os tipos
+  // somar o total de receitas e despesas
+  // calcular o valor pendente e pago entre receitas e despesas
+  // retornar o saldo previsto receitas - despesas
 }

@@ -6,8 +6,9 @@ import {
   Max,
   IsNumber,
   IsEnum,
-  IsDateString,
   IsDate,
+  IsOptional,
+  IsUUID,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { BillingTypes, BillingStatus } from '../../utils/enums';
@@ -55,4 +56,8 @@ export class TransactionDto {
   @IsNotEmpty()
   @IsEnum(BillingStatus)
   status: string;
+
+  @IsOptional()
+  @IsUUID()
+  reserveId: string;
 }

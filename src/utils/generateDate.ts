@@ -1,4 +1,15 @@
 export const generateDate = (month: string, day: string): Date => {
-  const year: number = new Date().getFullYear();
-  return new Date(year, parseInt(month) - 1, parseInt(day));
+  const currentDate = new Date();
+
+  const year: number = currentDate.getFullYear();
+
+  const requiredMonth = parseInt(month) - 1;
+  const requiredDay = parseInt(day);
+
+  const formattedDate = new Date(year, requiredMonth, requiredDay);
+
+  if (requiredMonth < currentDate.getMonth())
+    return new Date(year + 1, requiredMonth, requiredDay);
+
+  return formattedDate;
 };

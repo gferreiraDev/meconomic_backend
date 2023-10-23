@@ -53,6 +53,21 @@ export class TransactionsController {
     };
   }
 
+  @Put('/registerPayment')
+  async registerPayment(@CurrentUser('id') userId: string, @Body() body: any) {
+    const transaction = await this.service.registerPayment(userId, body);
+
+    if (!transaction)
+      throw new BadRequestException(
+        'Não foi possível registrar o pagamento. Tente novamente mais tarde',
+      );
+
+    return {
+      message: 'Pagamento registrado com sucesso',
+      data: transaction,
+    };
+  }
+
   @Put('/:id')
   async updateTransaction(
     @CurrentUser('id') userId: string,

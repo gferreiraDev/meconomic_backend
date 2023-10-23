@@ -1,15 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Card, Prisma, Statement, User } from '@prisma/client';
+import { Card, Statement, User } from '@prisma/client';
 import { DatabaseService } from '../database/database.service';
 import { CardDto } from './dtos/Card.dto';
 import { generateMonths } from '../utils/generateMonthArray';
 import { StatementsService } from '../statements/statements.service';
+import { PurchaseService } from '../purchase/purchase.service';
 
 @Injectable()
 export class CardsService {
   constructor(
     private db: DatabaseService,
     private statementService: StatementsService,
+    private purchaseService: PurchaseService,
   ) {}
 
   async create(user: User, data: CardDto): Promise<Card | null> {
@@ -48,6 +50,34 @@ export class CardsService {
         },
       });
 
+      if (card.annuity > 0) {
+        await this.purchaseService.createPurchase(user.id, {
+          purchaseDate: new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            card.closingDay,
+          ),
+          value: card.annuity,
+          description: 'Anuidade do cartão',
+          installments: 12,
+          cardId: card.id,
+        });
+      }
+
+      if (card.fees > 0) {
+        await this.purchaseService.createPurchase(user.id, {
+          purchaseDate: new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            card.closingDay,
+          ),
+          value: card.fees,
+          description: 'Taxas do cartão',
+          installments: 12,
+          cardId: card.id,
+        });
+      }
+
       return card;
     } catch (error) {
       console.log(error);
@@ -85,7 +115,7 @@ export class CardsService {
     try {
       const card = await this.db.card.update({
         where: { id, userId },
-        data: { ...data },
+        data: { ...data, currentLimit: data.limit },
       });
 
       if (!card) return null;

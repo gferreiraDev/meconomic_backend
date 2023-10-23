@@ -63,8 +63,14 @@ export class AuthService {
     return userData;
   }
 
-  async forgotPassword({ email }: { email: string }): Promise<any> {
-    const user = await this.userService.find({ email });
+  async forgotPassword({
+    email,
+    document,
+  }: {
+    email: string;
+    document: string;
+  }): Promise<any> {
+    const user = await this.userService.find({ email, document });
     if (!user) return null;
 
     const recoveryCode: string = crypto.randomBytes(8).toString('hex');
