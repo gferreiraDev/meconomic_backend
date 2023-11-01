@@ -1,18 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TwilioService } from './twilio.service';
+import { ConfigService } from '@nestjs/config';
 
 describe('TwilioService', () => {
-  let service: TwilioService;
+  let twilioService: TwilioService;
+  let configService: ConfigService;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [TwilioService],
+    const testingModule: TestingModule = await Test.createTestingModule({
+      providers: [ConfigService, TwilioService],
     }).compile();
 
-    service = module.get<TwilioService>(TwilioService);
+    twilioService = testingModule.get<TwilioService>(TwilioService);
+    configService = testingModule.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(twilioService).toBeDefined();
+    expect(configService).toBeDefined();
   });
 });

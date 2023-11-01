@@ -63,8 +63,6 @@ export class PurchaseService {
           },
         });
 
-        console.log(cards);
-
         cards.map(async (card) => {
           const list = await this.db.purchase.findMany({
             where: { cardId: card.id },
@@ -85,7 +83,9 @@ export class PurchaseService {
   }
 
   async updatePurchase(userId, purchaseId, data) {
-    await this.deletePurchase(userId, purchaseId);
+    const purchase = await this.deletePurchase(userId, purchaseId);
+
+    if (!purchase) return null;
 
     return await this.createPurchase(userId, data);
   }
@@ -191,7 +191,6 @@ export class PurchaseService {
       orderBy: { dueDate: 'asc' },
     });
 
-    console.log('invoices', invoices);
     // TODO: must make sure the invoices exist and create otherwise
     if (!invoices.length) return null;
 

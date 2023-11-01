@@ -27,7 +27,6 @@ export class TransactionsController {
     @CurrentUser('id') id: string,
     @Body() body: TransactionDto,
   ) {
-    console.log({ id }, { body });
     const transaction = await this.service.create(id, body);
 
     if (!transaction)

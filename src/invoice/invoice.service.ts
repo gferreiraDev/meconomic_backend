@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from '../database/database.service';
 
 @Injectable()
 export class InvoiceService {
@@ -24,8 +24,6 @@ export class InvoiceService {
         dueDate.getMonth() + 1,
         1,
       );
-
-      console.log('MinDate', minDate, 'MaxDate', maxDate);
 
       if (cardId === 'all') {
         installments = await this.db.purchaseInstallment.findMany({
@@ -56,8 +54,6 @@ export class InvoiceService {
           include: { purchase: true },
         });
       }
-
-      console.log('installments', installments);
 
       return installments;
     } catch (error) {

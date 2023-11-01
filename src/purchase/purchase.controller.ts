@@ -1,3 +1,6 @@
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
+import { PurchaseService } from './purchase.service';
+import { AuthGuard } from '@nestjs/passport';
 import {
   BadRequestException,
   Body,
@@ -10,9 +13,6 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { PurchaseService } from './purchase.service';
-import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
-import { AuthGuard } from '@nestjs/passport';
 
 @Controller('purchases')
 @UseGuards(AuthGuard('jwt'))
@@ -34,8 +34,6 @@ export class PurchaseController {
 
   @Post()
   async addPurchase(@CurrentUser('id') userId: string, @Body() body: any) {
-    console.log('Body', body);
-
     const purchase = await this.service.createPurchase(userId, body);
 
     if (!purchase)

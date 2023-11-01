@@ -9,12 +9,8 @@ export class SendgridService {
   }
 
   async sendEmail(data: SendGrid.MailDataRequired): Promise<any> {
-    console.log(data);
     try {
       const transport = await SendGrid.send(data);
-
-      console.log(transport);
-      console.log('Email Sent to', data.to);
 
       return transport;
     } catch (error) {

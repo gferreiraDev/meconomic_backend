@@ -1,18 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SendgridService } from './sendgrid.service';
+import { ConfigService } from '@nestjs/config';
 
 describe('SendgridService', () => {
-  let service: SendgridService;
+  let sendgridService: SendgridService;
+  let configService: ConfigService;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [SendgridService],
+    const testingModule: TestingModule = await Test.createTestingModule({
+      providers: [ConfigService, SendgridService],
     }).compile();
 
-    service = module.get<SendgridService>(SendgridService);
+    sendgridService = testingModule.get<SendgridService>(SendgridService);
+    configService = testingModule.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(sendgridService).toBeDefined();
+    expect(configService).toBeDefined();
   });
 });

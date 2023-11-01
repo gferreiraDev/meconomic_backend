@@ -22,8 +22,6 @@ export class AuthController {
   signin(@Req() request: Request) {
     const data = request.user;
 
-    console.log('User login', data);
-
     return {
       message: 'Login realizado com sucesso',
       data,

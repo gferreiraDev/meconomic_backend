@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Card, Statement, User } from '@prisma/client';
+import { Card, Statement } from '@prisma/client';
 import { DatabaseService } from '../database/database.service';
 import { CardDto } from './dtos/Card.dto';
 import { generateMonths } from '../utils/generateMonthArray';
@@ -14,12 +14,12 @@ export class CardsService {
     private purchaseService: PurchaseService,
   ) {}
 
-  async create(user: User, data: CardDto): Promise<Card | null> {
+  async create(userId: string, data: CardDto): Promise<Card | null> {
     try {
       const cardExists = await this.db.card.findFirst({
         where: {
           lastNumbers: data.lastNumbers,
-          userId: user.id,
+          userId: userId,
         },
       });
 
@@ -27,7 +27,7 @@ export class CardsService {
 
       // Create Statement first
       const cardStatement: Statement = await this.statementService.create(
-        user.id,
+        userId,
         {
           type: 'DA',
           subcategory: null,
@@ -45,13 +45,13 @@ export class CardsService {
         data: {
           ...data,
           currentLimit: data.limit,
-          userId: user.id,
+          userId,
           statementId: cardStatement.id,
         },
       });
 
       if (card.annuity > 0) {
-        await this.purchaseService.createPurchase(user.id, {
+        await this.purchaseService.createPurchase(userId, {
           purchaseDate: new Date(
             new Date().getFullYear(),
             new Date().getMonth(),
@@ -65,7 +65,7 @@ export class CardsService {
       }
 
       if (card.fees > 0) {
-        await this.purchaseService.createPurchase(user.id, {
+        await this.purchaseService.createPurchase(userId, {
           purchaseDate: new Date(
             new Date().getFullYear(),
             new Date().getMonth(),
