@@ -1,4 +1,4 @@
-import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { AuthGuard } from '@nestjs/passport';

@@ -1,6 +1,5 @@
 import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { CardsService } from './cards.service';
-import { User } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
 import { CardDto } from './dtos/Card.dto';
 import {
@@ -22,8 +21,8 @@ export class CardsController {
   constructor(private readonly service: CardsService) {}
 
   @Post()
-  async createCard(@CurrentUser() user: User, @Body() body: CardDto) {
-    const card = await this.service.create(user, body);
+  async createCard(@CurrentUser('id') userId: string, @Body() body: CardDto) {
+    const card = await this.service.create(userId, body);
 
     if (!card) throw new BadRequestException('Erro');
 

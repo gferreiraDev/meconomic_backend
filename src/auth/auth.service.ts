@@ -49,7 +49,8 @@ export class AuthService {
   }
 
   async updatePassword(user: User, data: any): Promise<User | null> {
-    if (!bcrypt.compareSync(data.currentPassword, user.password)) return null;
+    const isValid = bcrypt.compareSync(data.currentPassword, user.password);
+    if (!isValid) return null;
 
     const hash: string = bcrypt.hashSync(data.password, 10);
 
@@ -70,46 +71,53 @@ export class AuthService {
     email: string;
     document: string;
   }): Promise<any> {
-    const user = await this.userService.find({ email, document });
-    if (!user) return null;
+    try {
+      const user = await this.userService.find({ email, document });
 
-    const recoveryCode: string = crypto.randomBytes(8).toString('hex');
-    const resetToken: string = await bcrypt.hash(recoveryCode, 10);
+      if (!user) return null;
 
-    await this.userService.update(user.id, { resetToken });
+      const recoveryCode: string = crypto.randomBytes(8).toString('hex');
+      const resetToken: string = await bcrypt.hash(recoveryCode, 10);
 
-    // TODO: create a template to send either a code or a link
-    await this.emailService.sendEmail({
-      to: { name: `${user.firstName} ${user.lastName}`, email: user.email },
-      from: process.env.SENDGRID_ACCOUNT,
-      subject: 'Account Recovery',
-      text: `We received a request for password reset from your accout. 
-        If you recognize this request, please access the link: http://localhost:5173/reset-password/${resetToken}.  
-        If you didn't make the request, please discart this message, no action is required.`,
-      html: `
-        <h4>We received a request for password reset from your accout.</h4> 
-        <p>If you recognize this request, please access the link <a href='http://localhost:5173/reset-password/${resetToken}'>here</a></p>.
-        <p>If you didn't make the request, please discart this message, no action is required.</p>`,
-    });
+      await this.userService.update(user.id, { resetToken });
 
-    await this.smsService.sendSMS({
-      to: formatPhoneNumber(user.phone),
-      body: `We received a request for password reset from your accout. 
-        If you recognize this request, please access the link: http://localhost:5173/reset-password/${resetToken}.  
-        If you didn't make the request, please discart this message, no action is required.`,
-    });
+      // TODO: create a template to send either a code or a link
+      await this.emailService.sendEmail({
+        to: { name: `${user.firstName} ${user.lastName}`, email: user.email },
+        from: process.env.SENDGRID_ACCOUNT,
+        subject: 'Account Recovery',
+        text: `We received a request for password reset from your accout. 
+          If you recognize this request, please access the link: http://localhost:5173/reset-password/${recoveryCode}.  
+          If you didn't make the request, please discart this message, no action is required.`,
+        html: `
+          <h4>We received a request for password reset from your accout.</h4> 
+          <p>If you recognize this request, please access the link <a href='http://localhost:5173/reset-password/${recoveryCode}'>here</a></p>.
+          <p>If you didn't make the request, please discart this message, no action is required.</p>`,
+      });
 
-    return recoveryCode;
+      await this.smsService.sendSMS({
+        to: formatPhoneNumber(user.phone),
+        body: `We received a request for password reset from your accout. 
+          If you recognize this request, please access the link: http://localhost:5173/reset-password/${recoveryCode}.  
+          If you didn't make the request, please discart this message, no action is required.`,
+      });
+
+      return recoveryCode;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
   }
 
   async resetPassword(data: any): Promise<any> {
     const user = await this.userService.find({ id: data.id });
-    if (!user) return null;
+    if (!user || !user.resetToken) return null;
 
     const isResetTokenValid = await bcrypt.compare(
       data.resetToken,
       user.resetToken,
     );
+
     if (!isResetTokenValid) return null;
 
     const hash = await bcrypt.hash(data.password, 10);

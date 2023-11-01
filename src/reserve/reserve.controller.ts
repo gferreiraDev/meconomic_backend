@@ -1,3 +1,7 @@
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
+import { ReserveService } from './reserve.service';
+import { ReserveDto } from './dto/reserve.dto';
+import { AuthGuard } from '@nestjs/passport';
 import {
   BadRequestException,
   Body,
@@ -9,10 +13,6 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
-import { ReserveService } from './reserve.service';
-import { ReserveDto } from './dto/reserve.dto';
 
 @Controller('reserves')
 @UseGuards(AuthGuard('jwt'))
@@ -47,7 +47,6 @@ export class ReserveController {
     @Param('id') id: string,
     @Body() body: ReserveDto,
   ) {
-    console.log('isString or isNumber', body.amount, typeof body.amount);
     const data = await this.service.updateReserve(userId, id, body);
 
     if (!data) throw new BadRequestException('Registro não encontrado');

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Transaction } from '@prisma/client';
-import { DatabaseService } from 'src/database/database.service';
-import { generateDate } from 'src/utils/generateDate';
+import { DatabaseService } from '../database/database.service';
+import { generateDate } from '../utils/generateDate';
 import { TransactionDto } from './dtos/transaction.dto';
-import { PaymentService } from 'src/payment/payment.service';
+import { PaymentService } from '../payment/payment.service';
 
 @Injectable()
 export class TransactionsService {
@@ -49,7 +49,7 @@ export class TransactionsService {
     }
   }
 
-  async list(userId, query: any): Promise<any> {
+  async list(userId: string, query: any): Promise<any> {
     try {
       const dueDate = query?.dueDate ? new Date(query.dueDate) : new Date();
       const { minDate, maxDate } = this.defineDateRange(dueDate);
@@ -68,8 +68,6 @@ export class TransactionsService {
 
       const report = await this.getMonthTotal(userId, dueDate);
 
-      console.log('Monthly report', report);
-
       return { transactions, report };
     } catch (error) {
       console.log(error);
@@ -86,8 +84,6 @@ export class TransactionsService {
       let transaction = await this.db.transaction.findFirst({
         where: { id, userId },
       });
-
-      if (!transaction) return null;
 
       if (transaction.status !== 'Quitado' && data?.status === 'Quitado') {
         return this.registerPayment(userId, data);
@@ -119,14 +115,10 @@ export class TransactionsService {
   }
 
   async removeMany(userId: string, statementId: string): Promise<any> {
-    console.log({ userId }, { statementId });
-
     try {
       const transactions = await this.db.transaction.deleteMany({
         where: { userId, statementId },
       });
-
-      console.log(transactions);
 
       return transactions;
     } catch (error) {
@@ -136,38 +128,43 @@ export class TransactionsService {
   }
 
   async registerPayment(userId: string, data: any): Promise<any> {
-    const update = await this.db.transaction.update({
-      where: { id: data.id, userId },
-      data: {
-        ...data,
-        status: 'Quitado',
-      },
-    });
-
-    await this.paymentService.addPayment({
-      value: update.value,
-      paymentType: update.type.startsWith('D') ? 'withdrawal' : 'deposit',
-      transactionId: update.id,
-      reserveId: null,
-    });
-
-    const statement = await this.db.statement.findFirst({
-      where: { id: update.statementId },
-      include: { card: true },
-    });
-
-    if (update.category === 'Fatura Cartão') {
-      await this.db.card.update({
-        where: { id: statement.card.id },
+    try {
+      const update = await this.db.transaction.update({
+        where: { id: data.id, userId },
         data: {
-          currentLimit:
-            statement.card.currentLimit +
-            (update.value - statement.expectedValue),
+          ...data,
+          status: 'Quitado',
         },
       });
-    }
 
-    return update;
+      await this.paymentService.addPayment({
+        value: update.value,
+        paymentType: update.type.startsWith('D') ? 'withdrawal' : 'deposit',
+        transactionId: update.id,
+        reserveId: null,
+      });
+
+      if (update.category === 'Fatura Cartão') {
+        const statement = await this.db.statement.findFirst({
+          where: { id: update.statementId },
+          include: { card: true },
+        });
+
+        await this.db.card.update({
+          where: { id: statement.card.id },
+          data: {
+            currentLimit:
+              statement.card.currentLimit +
+              (update.value - statement.expectedValue),
+          },
+        });
+      }
+
+      return update;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
   }
 
   /*========| PRIVATE USEFUL METHODS |============================================ */
@@ -240,9 +237,9 @@ export class TransactionsService {
     transactions.forEach((item) => {
       if (item.type.startsWith('D')) {
         if (item.status === 'Quitado') {
-          indexes.expenses.paid += item._sum.value;
+          indexes.expenses.paid += item?._sum?.value;
         } else {
-          indexes.expenses.pending += item._sum.value;
+          indexes.expenses.pending += item?._sum?.value;
         }
 
         if (item.type === 'DF') {

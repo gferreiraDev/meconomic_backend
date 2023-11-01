@@ -17,8 +17,6 @@ export class TwilioService {
       ...data,
     });
 
-    console.log('SMS response', sms);
-
     return sms;
   }
 }
