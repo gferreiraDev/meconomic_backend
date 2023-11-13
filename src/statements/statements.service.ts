@@ -57,12 +57,7 @@ export class StatementsService {
         where: { id, userId },
         data: {
           ...data,
-          months: {
-            // updateMany: {
-            //   where: { statementId: id },
-            //   data: [...data.months],
-            // },
-          },
+          months: {},
         },
         include: { months: true },
       });

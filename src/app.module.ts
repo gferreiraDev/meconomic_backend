@@ -14,6 +14,7 @@ import { InvoiceModule } from './invoice/invoice.module';
 import { ReserveModule } from './reserve/reserve.module';
 import { PaymentModule } from './payment/payment.module';
 import { TargetModule } from './target/target.module';
+import { InvestmentModule } from './investment/investment.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { TargetModule } from './target/target.module';
     ReserveModule,
     PaymentModule,
     TargetModule,
+    InvestmentModule,
   ],
   controllers: [],
   providers: [],

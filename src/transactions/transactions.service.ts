@@ -38,7 +38,6 @@ export class TransactionsService {
         return await this.create(data.userId, {
           ...item,
           installment: idx + 1,
-          // reserveId: null,
         });
       });
 
