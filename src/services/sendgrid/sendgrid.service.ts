@@ -14,7 +14,7 @@ export class SendgridService {
 
       return transport;
     } catch (error) {
-      console.log('Ocorreu um erro:', error);
+      console.log(error);
     }
   }
 }

@@ -15,7 +15,7 @@ import { TwilioModule } from '../services/twilio/twilio.module';
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '1d' },
+      signOptions: { expiresIn: 3000 },
     }),
     SendgridModule,
     TwilioModule,

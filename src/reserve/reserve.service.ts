@@ -23,10 +23,11 @@ export class ReserveService {
     }
   }
 
-  async listReserves(userId: string): Promise<Reserve[] | null> {
+  async listReserves(userId: string): Promise<any> {
     try {
       const reserves = await this.db.reserve.findMany({
         where: { userId },
+        include: { payments: { include: { transaction: true } } },
       });
 
       return reserves;
