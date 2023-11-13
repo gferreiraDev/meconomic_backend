@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { SendgridService } from '../services/sendgrid/sendgrid.service';
-import { TwilioService } from '../services/twilio/twilio.service';
 import { DatabaseService } from '../database/database.service';
 import * as bcrypt from 'bcrypt';
 
@@ -14,7 +13,6 @@ describe('AuthService', () => {
   let userService: UserService;
   let jwtService: JwtService;
   let sendgridService: SendgridService;
-  let twilioService: TwilioService;
   let databaseService: DatabaseService;
 
   const userMock = {
@@ -53,12 +51,6 @@ describe('AuthService', () => {
           },
         },
         {
-          provide: TwilioService,
-          useValue: {
-            sendSMS: jest.fn(),
-          },
-        },
-        {
           provide: DatabaseService,
           useValue: {
             user: {
@@ -77,7 +69,6 @@ describe('AuthService', () => {
     userService = testingModule.get<UserService>(UserService);
     jwtService = testingModule.get<JwtService>(JwtService);
     sendgridService = testingModule.get<SendgridService>(SendgridService);
-    twilioService = testingModule.get<TwilioService>(TwilioService);
     databaseService = testingModule.get<DatabaseService>(DatabaseService);
   });
 
@@ -88,7 +79,6 @@ describe('AuthService', () => {
       expect(userService).toBeDefined();
       expect(jwtService).toBeDefined();
       expect(sendgridService).toBeDefined();
-      expect(twilioService).toBeDefined();
       expect(databaseService).toBeDefined();
     });
   });
@@ -248,7 +238,6 @@ describe('AuthService', () => {
       expect(userService.find).toBeCalledTimes(1);
       expect(userService.update).toBeCalledTimes(1);
       expect(sendgridService.sendEmail).toBeCalledTimes(1);
-      expect(twilioService.sendSMS).toBeCalledTimes(1);
     });
 
     it('4.2 - should send recovery link provided a valid document', async () => {
@@ -266,7 +255,6 @@ describe('AuthService', () => {
       expect(userService.find).toBeCalledTimes(1);
       expect(userService.update).toBeCalledTimes(1);
       expect(sendgridService.sendEmail).toBeCalledTimes(1);
-      expect(twilioService.sendSMS).toBeCalledTimes(1);
     });
 
     it('4.3 - should return null provided an invalid data', async () => {
@@ -285,7 +273,6 @@ describe('AuthService', () => {
       expect(userService.find).toBeCalledTimes(1);
       expect(userService.update).not.toBeCalled();
       expect(sendgridService.sendEmail).not.toBeCalled();
-      expect(twilioService.sendSMS).not.toBeCalled();
     });
   });
 

@@ -4,7 +4,6 @@ import { DatabaseModule } from './database/database.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { SendgridModule } from './services/sendgrid/sendgrid.module';
-import { TwilioModule } from './services/twilio/twilio.module';
 import { StatementsModule } from './statements/statements.module';
 import { CardsModule } from './cards/cards.module';
 import { TransactionsModule } from './transactions/transactions.module';
@@ -23,7 +22,6 @@ import { InvestmentModule } from './investment/investment.module';
     UserModule,
     AuthModule,
     SendgridModule,
-    TwilioModule,
     StatementsModule,
     CardsModule,
     TransactionsModule,

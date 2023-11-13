@@ -4,8 +4,6 @@ import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { SendgridService } from '../services/sendgrid/sendgrid.service';
-import { TwilioService } from '../services/twilio/twilio.service';
-import { formatPhoneNumber } from '../utils/formatter';
 const crypto = require('crypto');
 
 @Injectable()
@@ -14,7 +12,6 @@ export class AuthService {
     private userService: UserService,
     private jwt: JwtService,
     private emailService: SendgridService,
-    private smsService: TwilioService,
   ) {}
 
   async validate(email: string, password: string): Promise<any> {
@@ -93,13 +90,6 @@ export class AuthService {
           <h4>We received a request for password reset from your accout.</h4> 
           <p>If you recognize this request, please access the link <a href='http://localhost:5173/reset-password/${recoveryCode}'>here</a></p>.
           <p>If you didn't make the request, please discart this message, no action is required.</p>`,
-      });
-
-      await this.smsService.sendSMS({
-        to: formatPhoneNumber(user.phone),
-        body: `We received a request for password reset from your accout. 
-          If you recognize this request, please access the link: http://localhost:5173/reset-password/${recoveryCode}.  
-          If you didn't make the request, please discart this message, no action is required.`,
       });
 
       return recoveryCode;
