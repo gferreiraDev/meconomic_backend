@@ -7,7 +7,6 @@ import { JwtStrategy } from './strategy/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { SendgridModule } from '../services/sendgrid/sendgrid.module';
-import { TwilioModule } from '../services/twilio/twilio.module';
 
 @Module({
   imports: [
@@ -18,7 +17,6 @@ import { TwilioModule } from '../services/twilio/twilio.module';
       signOptions: { expiresIn: 3000 },
     }),
     SendgridModule,
-    TwilioModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
