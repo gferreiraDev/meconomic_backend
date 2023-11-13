@@ -54,7 +54,7 @@ export class CardsService {
         await this.purchaseService.createPurchase(userId, {
           purchaseDate: new Date(
             new Date().getFullYear(),
-            new Date().getMonth(),
+            new Date().getMonth() - 1,
             card.closingDay,
           ),
           value: card.annuity,
@@ -68,7 +68,7 @@ export class CardsService {
         await this.purchaseService.createPurchase(userId, {
           purchaseDate: new Date(
             new Date().getFullYear(),
-            new Date().getMonth(),
+            new Date().getMonth() - 1,
             card.closingDay,
           ),
           value: card.fees,

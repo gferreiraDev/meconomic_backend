@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Transaction } from '@prisma/client';
 import { DatabaseService } from '../database/database.service';
 import { generateDate } from '../utils/generateDate';
@@ -38,7 +38,6 @@ export class TransactionsService {
         return await this.create(data.userId, {
           ...item,
           installment: idx + 1,
-          reserveId: null,
         });
       });
 
@@ -89,9 +88,11 @@ export class TransactionsService {
         return this.registerPayment(userId, data);
       }
 
+      const { reserveId, ...updatingDate } = data;
+
       transaction = await this.db.transaction.update({
         where: { id, userId },
-        data,
+        data: updatingDate,
       });
 
       return transaction;
@@ -128,21 +129,43 @@ export class TransactionsService {
   }
 
   async registerPayment(userId: string, data: any): Promise<any> {
+    const reserve = await this.db.reserve.findFirst({
+      where: { id: data.reserveId },
+    });
+
+    if (!reserve) throw new BadRequestException('Reserva não encontrada');
+    if (data.type.startsWith('D') && reserve.amount < data.value)
+      throw new BadRequestException('Saldo insuficiente');
+
     try {
       const update = await this.db.transaction.update({
         where: { id: data.id, userId },
         data: {
-          ...data,
-          status: 'Quitado',
+          value: data.value,
+          status: data.status,
+          payDate: data.payDate,
         },
       });
 
       await this.paymentService.addPayment({
         value: update.value,
+        payDate: update.payDate,
         paymentType: update.type.startsWith('D') ? 'withdrawal' : 'deposit',
         transactionId: update.id,
-        reserveId: null,
+        reserveId: data.reserveId,
       });
+
+      if (data.type.startsWith('D')) {
+        await this.db.reserve.update({
+          where: { id: reserve.id, userId },
+          data: { ...reserve, amount: reserve.amount - data.value },
+        });
+      } else {
+        await this.db.reserve.update({
+          where: { id: reserve.id, userId },
+          data: { ...reserve, amount: reserve.amount + data.value },
+        });
+      }
 
       if (update.category === 'Fatura Cartão') {
         const statement = await this.db.statement.findFirst({
@@ -199,6 +222,20 @@ export class TransactionsService {
 
   private async getMonthTotal(userId, referenceMonth: Date): Promise<any> {
     const { minDate, maxDate } = this.defineDateRange(referenceMonth);
+    const expectedIndexes = {
+      expenses: {
+        fixed: 0,
+        variable: 0,
+        discretionary: 0,
+        total: 0,
+      },
+      incomes: {
+        fixed: 0,
+        variable: 0,
+        discretionary: 0,
+        total: 0,
+      },
+    };
     const indexes = {
       expenses: {
         fixed: 0,
@@ -220,7 +257,7 @@ export class TransactionsService {
     };
 
     const transactions = await this.db.transaction.groupBy({
-      by: ['type', 'status'],
+      by: ['type', 'status', 'statementId'],
       where: {
         userId,
         dueDate: {
@@ -231,6 +268,34 @@ export class TransactionsService {
       _sum: {
         value: true,
       },
+    });
+
+    transactions.forEach(async (transaction) => {
+      const statement = await this.db.statement.findFirst({
+        where: { id: transaction.statementId },
+      });
+
+      if (statement?.type.startsWith('D')) {
+        expectedIndexes.expenses.total += statement.expectedValue;
+
+        if (statement.type === 'DF') {
+          expectedIndexes.expenses.fixed += statement.expectedValue;
+        } else if (statement.type === 'DV') {
+          expectedIndexes.expenses.variable += statement.expectedValue;
+        } else if (statement.type === 'DA') {
+          expectedIndexes.expenses.discretionary += statement.expectedValue;
+        }
+      } else if (statement?.type.startsWith('R')) {
+        expectedIndexes.incomes.total += statement.expectedValue;
+
+        if (statement.type === 'RF') {
+          expectedIndexes.incomes.fixed += statement.expectedValue;
+        } else if (statement.type === 'RV') {
+          expectedIndexes.incomes.variable += statement.expectedValue;
+        } else if (statement.type === 'RA') {
+          expectedIndexes.incomes.discretionary += statement.expectedValue;
+        }
+      }
     });
 
     // retorna no formato do gráfico
@@ -270,6 +335,6 @@ export class TransactionsService {
     indexes.incomes.total = indexes.incomes.pending + indexes.incomes.paid;
     indexes.balance = indexes.incomes.total - indexes.expenses.total;
 
-    return indexes;
+    return { indexes, expectedIndexes };
   }
 }

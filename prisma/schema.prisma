@@ -23,6 +23,7 @@ model User {
   cards Card[]
   transactions Transaction[]
   reserves Reserve[]
+  targets Target[]
 }
 
 model Statement {
@@ -138,6 +139,7 @@ model Reserve {
 model Payment {
   value Float
   paymentType String
+  payDate DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -146,4 +148,18 @@ model Payment {
   transaction Transaction @relation(fields: [transactionId], references: [id])
   reserve Reserve @relation(fields: [reserveId], references: [id])
   @@id([transactionId, reserveId])
+}
+
+model Target {
+  id String @id @default(uuid())
+  targetValue Float
+  currentValue Float
+  description String
+  deadline DateTime
+  status String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  userId String
 }
