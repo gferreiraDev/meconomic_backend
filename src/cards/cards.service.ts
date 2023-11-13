@@ -25,7 +25,6 @@ export class CardsService {
 
       if (cardExists) throw new BadRequestException('Cartão já existe');
 
-      // Create Statement first
       const cardStatement: Statement = await this.statementService.create(
         userId,
         {
@@ -40,7 +39,6 @@ export class CardsService {
         },
       );
 
-      // Create Card
       const card = await this.db.card.create({
         data: {
           ...data,

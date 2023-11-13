@@ -41,7 +41,6 @@ export class TransactionsController {
   @Get()
   async listTransactions(
     @CurrentUser('id') userId: string,
-    // @Query() query: TransactionQueryDto,
     @Query() query: any,
   ) {
     const transactions = await this.service.list(userId, query);

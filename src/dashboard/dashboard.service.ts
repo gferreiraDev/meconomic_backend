@@ -45,14 +45,6 @@ export class DashboardService {
       });
 
       transactions.forEach(({ type, value, dueDate }) => {
-        // const currentDate = dueDate
-        //   .toLocaleDateString('en-us')
-        //   .replace(/\/\d+\//, '/01/');
-
-        // if (!months.includes(currentDate)) {
-        //   months.push(currentDate);
-        // }
-
         const month = dueDate.getMonth();
 
         if (type.startsWith('D')) {
@@ -80,6 +72,8 @@ export class DashboardService {
 
       const result = incomes.map((item, idx) => item - expenses[idx]);
 
+      const complementaryInfo = await this.getComplementInfo(userId);
+
       const resultSet = {
         labels: months,
         incomes: incomes.map((value) => value.toFixed(2)),
@@ -93,6 +87,7 @@ export class DashboardService {
         totalRA,
         totalIncomes,
         totalExpenses,
+        ...complementaryInfo,
       };
 
       return resultSet;
@@ -102,9 +97,59 @@ export class DashboardService {
     }
   }
 
-  // listar os lançamentos de um determinado mês
-  // separar os lançamentos entre os tipos
-  // somar o total de receitas e despesas
-  // calcular o valor pendente e pago entre receitas e despesas
-  // retornar o saldo previsto receitas - despesas
+  private async getComplementInfo(userId: string): Promise<any> {
+    const result = {
+      currentPendingSum: 0,
+      investmentsSum: 0,
+      walletSum: 0,
+      targetSum: 0,
+    };
+
+    const refDate = new Date();
+    const minDate = new Date(refDate.getFullYear(), refDate.getMonth(), 1);
+    const maxDate = new Date(refDate.getFullYear(), refDate.getMonth() + 1, 1);
+
+    try {
+      const investments = await this.db.investment.aggregate({
+        where: { userId },
+        _sum: { value: true },
+      });
+
+      const reserves = await this.db.reserve.aggregate({
+        where: { userId },
+        _sum: { amount: true },
+      });
+
+      const targets = await this.db.target.aggregate({
+        where: { userId },
+        _sum: { currentValue: true },
+      });
+
+      const transactions = await this.db.transaction.findMany({
+        where: {
+          userId,
+          dueDate: {
+            lte: maxDate,
+            gte: minDate,
+          },
+        },
+      });
+
+      const transactionSum = transactions.reduce(
+        (sum, current) =>
+          current.type.startsWith('D')
+            ? (sum -= current.value)
+            : current.type.startsWith('R')
+            ? (sum += current.value)
+            : 0,
+        0,
+      );
+
+      result.investmentsSum = investments._sum.value;
+      result.walletSum = reserves._sum.amount;
+      result.targetSum = targets._sum.currentValue;
+      result.currentPendingSum = transactionSum;
+      return result;
+    } catch (error) {}
+  }
 }

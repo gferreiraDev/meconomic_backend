@@ -56,8 +56,4 @@ export class TransactionDto {
   @IsNotEmpty()
   @IsEnum(BillingStatus)
   status: string;
-
-  // @IsOptional()
-  // @IsUUID()
-  // reserveId: string;
 }
