@@ -14,6 +14,7 @@
     "db:dev:load": "prisma migrate deploy",
     "db:dev:start": "yarn db:dev:down && yarn db:dev:up && yarn sleep && yarn db:dev:load",
     "start": "nest start",
+    "prod": "yarn db:dev:load && yarn start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
